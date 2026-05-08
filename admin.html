@@ -329,7 +329,7 @@ let db = null;
 let orders = [];
 let unsubscribe = null;
 let currentModal = null;
-let trackingBaseUrl = 'https://courageous-cajeta-937a48.netlify.app';
+let trackingBaseUrl = 'https://concretcol.github.io/pedidos';
 
 // Load config
 const cfg = {apiKey:'AIzaSyAaKkFBsJ3TOTRqJ9WYKeE_QC6xIIkwUcU',authDomain:'pedidosconcretcol.firebaseapp.com',projectId:'pedidosconcretcol',storageBucket:'pedidosconcretcol.appspot.com',appId:'1:908278232919:web:dd9ff0e3f2241c54fe3012'};
@@ -592,7 +592,7 @@ window.openModal = function(type, num) {
     body=`<div class="field" style="margin-bottom:20px"><label>Fecha en que recibimos el pedido *</label><input type="date" id="m-date" value="${today}"></div>
     <button class="btn-primary" onclick="confirmModal()"><svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round"><polyline points="20 6 9 17 4 12"/></svg> Guardar</button>`;
   } else if (type==='pago') {
-    title='Verificar pago recibido (Auditoría)';
+    title='Verificar Pago en Bancos';
     body=`<div class="field" style="margin-bottom:20px"><label>Fecha de confirmación *</label><input type="date" id="m-date" value="${today}"></div>
     <button class="btn-primary" onclick="confirmModal()"><svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Confirmar pago verificado</button>`;
   } else if (type==='planeado') {

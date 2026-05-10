@@ -475,11 +475,14 @@ window.copyLink = function(url) {
 }
 
 function buildTimeline(o) {
+  // Compatibilidad con pedidos antiguos
+  const entradaProd = o.fechaEntradaProduccion || o.fechaSalida || null;
+  const despachoPlan = o.fechaDespachoPlan || o.fechaSalidaPlaneada || null;
   const esRecogida = o.tipoEntrega === 'recoge_cliente';
   let steps = [
     {label:'Pedido registrado', date:o.fechaRecibido||o.createdAt, done:true, extra:''},
     {label:'Verificación de pago', date:o.fechaPago, done:!!o.fechaPago, extra:''},
-    {label:'Entrada a producción', date:o.fechaEntradaProduccion, done:!!o.fechaEntradaProduccion, extra: o.fechaDespachoPlan&&!o.fechaDespacho?'Despacho estimado: '+fmtDate(o.fechaDespachoPlan):''},
+    {label:'Entrada a producción', date:entradaProd, done:!!entradaProd, extra: despachoPlan&&!o.fechaDespacho?'Despacho estimado: '+fmtDate(despachoPlan):''},
   ];
 
   if (esRecogida) {
@@ -508,6 +511,8 @@ function buildTimeline(o) {
 }
 
 function buildActions(o) {
+  // Compatibilidad con pedidos antiguos
+  const entradaProd = o.fechaEntradaProduccion || o.fechaSalida || null;
   let btns = '';
   // 1. Verificación de pago
   if (!o.fechaPago) {
@@ -517,17 +522,17 @@ function buildActions(o) {
   }
 
   // 2. Entrada a producción + fecha estimada despacho
-  if (o.fechaPago && !o.fechaEntradaProduccion) {
+  if (o.fechaPago && !entradaProd) {
     btns += `<button class="btn-sm amber" onclick="event.stopPropagation();openModal('produccion','${o.num}')"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Entrada producción</button>`;
-  } else if (o.fechaEntradaProduccion) {
+  } else if (entradaProd) {
     btns += `<button class="btn-sm edit" onclick="event.stopPropagation();openModal('edit_produccion','${o.num}')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar producción</button>`;
   }
 
   // 3. Despacho — pregunta tipo de entrega si no está definido
   const esRecogida = o.tipoEntrega === 'recoge_cliente';
-  if (o.fechaEntradaProduccion && !o.fechaDespacho && !o.fechaDisponibleRecogida) {
+  if ((entradaProd || ['listo_despacho','en_produccion'].includes(o.status)) && !o.fechaDespacho && !o.fechaDisponibleRecogida) {
     btns += `<button class="btn-sm blue" onclick="event.stopPropagation();openModal('despacho','${o.num}')"><svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> Registrar despacho</button>`;
-  } else if (esRecogida && o.fechaDisponibleRecogida && !o.fechaEntrega) {
+  } else if (esRecogida && (o.fechaDisponibleRecogida) && !o.fechaEntrega) {
     btns += `<button class="btn-sm teal" onclick="event.stopPropagation();openModal('entrega_recogida','${o.num}')"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Registrar recogida</button>`;
     btns += `<button class="btn-sm edit" onclick="event.stopPropagation();openModal('edit_recogida','${o.num}')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar disponibilidad</button>`;
   } else if (!esRecogida && o.fechaDespacho && !o.fechaEntrega) {
@@ -565,7 +570,7 @@ function orderHtml(o) {
         <div><div class="di-lbl">Teléfono</div><div class="di-val">${o.phone||'—'}</div></div>
         <div><div class="di-lbl">Fecha recibido</div><div class="di-val">${fmtDate(o.fechaRecibido)||fmtDate(o.createdAt)}</div></div>
         <div><div class="di-lbl">Pago verificado</div><div class="di-val">${fmtDate(o.fechaPago)||'Pendiente'}</div></div>
-        <div><div class="di-lbl">Entrada producción</div><div class="di-val">${fmtDate(o.fechaEntradaProduccion)||'—'}</div></div>
+        <div><div class="di-lbl">Entrada producción</div><div class="di-val">${fmtDate(o.fechaEntradaProduccion||o.fechaSalida)||'—'}</div></div>
         <div><div class="di-lbl">Despacho estimado</div><div class="di-val">${fmtDate(o.fechaDespachoPlan)||'—'}</div></div>
         <div><div class="di-lbl">Tipo de entrega</div><div class="di-val">${esRecogida?'🏪 Recoge en planta':o.tipoEntrega==='transportadora'?'🚚 Transportadora':'—'}</div></div>
         ${esRecogida?`
@@ -651,7 +656,7 @@ window.openModal = function(type, num) {
   else if (type === 'edit_produccion') {
     title = 'Editar Entrada a Producción';
     body = `<div class="edit-highlight">✏️ Editando registro existente</div>
-      <div class="modal-field"><label>Fecha de entrada a producción *</label><input type="date" id="m-fecha-prod" value="${o?.fechaEntradaProduccion||today}"></div>
+      <div class="modal-field"><label>Fecha de entrada a producción *</label><input type="date" id="m-fecha-prod" value="${o?.fechaEntradaProduccion||o?.fechaSalida||today}"></div>
       <div class="modal-field"><label>Fecha estimada de despacho</label><input type="date" id="m-despacho-plan" value="${o?.fechaDespachoPlan||''}"></div>
       <button class="btn-primary" onclick="confirmModal()">✓ Guardar cambios</button>`;
   }

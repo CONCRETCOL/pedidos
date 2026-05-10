@@ -257,6 +257,9 @@ function orderHtml(o) {
   const meta = statusMeta[sc] || statusMeta['pedido_recibido'];
   const chk = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
   const dot = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>`;
+  // Compatibilidad con pedidos antiguos
+  o.fechaEntradaProduccion = o.fechaEntradaProduccion || o.fechaSalida || null;
+  o.fechaDespachoPlan = o.fechaDespachoPlan || o.fechaSalidaPlaneada || null;
   const esRecogida = o.tipoEntrega === 'recoge_cliente';
 
   // Build steps based on delivery type
